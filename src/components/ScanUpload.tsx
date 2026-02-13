@@ -69,18 +69,18 @@ const ScanUpload = ({ onImageSelected, preview, onClear, isAnalyzing }: ScanUplo
 
   return (
     <label
-      className={`upload-zone ${isDragging ? "active" : ""} rounded-2xl flex flex-col items-center justify-center cursor-pointer bg-card transition-all`}
+      className={`upload-zone ${isDragging ? "active" : ""} rounded-2xl flex flex-col items-center justify-center cursor-pointer bg-card/60 backdrop-blur-sm transition-all group`}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
     >
-      <div className="py-16 px-8 flex flex-col items-center">
-        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-          <Upload className="w-6 h-6 text-primary" />
+      <div className="py-20 px-8 flex flex-col items-center">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/15 transition-colors">
+          <Upload className="w-7 h-7 text-primary" />
         </div>
-        <p className="font-display font-semibold text-base text-foreground mb-1">Upload X-Ray Scan</p>
-        <p className="text-sm text-muted-foreground mb-5">Drag & drop or click to browse</p>
-        <div className="flex items-center gap-2">
+        <p className="font-display font-bold text-lg text-foreground mb-1.5">Upload X-Ray Scan</p>
+        <p className="text-sm text-muted-foreground mb-6">Drag & drop or click to browse</p>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
           <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">Supports PNG, JPG, JPEG, DICOM</span>
         </div>

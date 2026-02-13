@@ -51,12 +51,31 @@ const Index = () => {
   }, [result, preview]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen w-full bg-background relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        {/* Gradient base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+        {/* Floating medical orbs */}
+        <div className="absolute top-[10%] left-[5%] w-72 h-72 rounded-full bg-primary/[0.04] blur-3xl animate-float-slow" />
+        <div className="absolute bottom-[15%] right-[8%] w-96 h-96 rounded-full bg-accent/[0.05] blur-3xl animate-float-medium" />
+        <div className="absolute top-[50%] left-[60%] w-52 h-52 rounded-full bg-primary/[0.03] blur-2xl animate-float-fast" />
+        <div className="absolute top-[25%] right-[20%] w-40 h-40 rounded-full bg-accent/[0.04] blur-2xl animate-float-reverse" />
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+        {/* Pulse rings */}
+        <div className="absolute top-[30%] left-[50%] -translate-x-1/2 -translate-y-1/2">
+          <div className="w-[600px] h-[600px] rounded-full border border-primary/[0.06] animate-pulse-ring" />
+          <div className="absolute inset-8 rounded-full border border-primary/[0.04] animate-pulse-ring-delay" />
+          <div className="absolute inset-16 rounded-full border border-primary/[0.03] animate-pulse-ring-delay-2" />
+        </div>
+      </div>
+
       {/* Navbar */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-5 h-16">
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-card/60 backdrop-blur-2xl">
+        <div className="w-full flex items-center justify-between px-6 lg:px-10 h-16">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
               <Activity className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
@@ -68,7 +87,7 @@ const Index = () => {
             <Button
               onClick={handleDownloadPDF}
               size="sm"
-              className="gap-2 rounded-lg"
+              className="gap-2 rounded-xl shadow-lg shadow-primary/10"
             >
               <Download className="w-3.5 h-3.5" />
               Download Report
@@ -77,10 +96,10 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-5 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Left: Upload + Button */}
-          <div className={`space-y-4 ${result ? "lg:col-span-2" : "lg:col-span-5 max-w-xl mx-auto w-full"}`}>
+      <main className="w-full px-6 lg:px-10 py-8">
+        <div className={`grid gap-8 ${result ? "grid-cols-1 lg:grid-cols-2 items-start" : "grid-cols-1 max-w-2xl mx-auto"}`}>
+          {/* Upload + Button */}
+          <div className="space-y-5">
             <ScanUpload
               onImageSelected={handleImageSelected}
               preview={preview}
@@ -91,7 +110,7 @@ const Index = () => {
             {preview && !result && !isAnalyzing && (
               <Button
                 onClick={handleAnalyze}
-                className="w-full h-12 text-base font-display font-semibold rounded-xl gap-2"
+                className="w-full h-13 text-base font-display font-semibold rounded-xl gap-2 shadow-lg shadow-primary/20"
                 size="lg"
               >
                 <Activity className="w-4 h-4" />
@@ -101,16 +120,16 @@ const Index = () => {
 
             {!preview && (
               <div className="grid grid-cols-3 gap-3 pt-2">
-                <FeatureChip icon={<Activity className="w-3.5 h-3.5" />} text="Fracture Detection" />
-                <FeatureChip icon={<FileText className="w-3.5 h-3.5" />} text="Instant Reports" />
-                <FeatureChip icon={<Shield className="w-3.5 h-3.5" />} text="HIPAA Mindful" />
+                <FeatureChip icon={<Activity className="w-4 h-4" />} text="Fracture Detection" />
+                <FeatureChip icon={<FileText className="w-4 h-4" />} text="Instant Reports" />
+                <FeatureChip icon={<Shield className="w-4 h-4" />} text="HIPAA Mindful" />
               </div>
             )}
           </div>
 
-          {/* Right: Results */}
+          {/* Results */}
           {result && (
-            <div className="lg:col-span-3">
+            <div>
               <AnalysisResult result={result} />
             </div>
           )}
@@ -121,9 +140,9 @@ const Index = () => {
 };
 
 const FeatureChip = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-  <div className="flex flex-col items-center gap-2 py-3 px-2 rounded-xl bg-card border border-border text-center">
-    <div className="text-primary">{icon}</div>
-    <span className="text-[11px] font-medium text-muted-foreground leading-tight">{text}</span>
+  <div className="flex flex-col items-center gap-3 py-4 px-3 rounded-2xl bg-card/60 backdrop-blur-sm border border-border/50 text-center hover:bg-card/80 hover:border-primary/20 transition-all duration-300 group">
+    <div className="text-primary group-hover:scale-110 transition-transform duration-300">{icon}</div>
+    <span className="text-xs font-medium text-muted-foreground leading-tight">{text}</span>
   </div>
 );
 
