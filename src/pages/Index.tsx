@@ -69,6 +69,41 @@ const Index = () => {
           <div className="absolute inset-8 rounded-full border border-primary/[0.07] animate-pulse-ring-delay" />
           <div className="absolute inset-16 rounded-full border border-primary/[0.05] animate-pulse-ring-delay-2" />
         </div>
+
+        {/* ECG / Heartbeat line */}
+        <svg className="absolute bottom-[12%] left-0 w-full h-24 opacity-[0.08]" viewBox="0 0 1200 100" preserveAspectRatio="none">
+          <path
+            className="animate-ecg-line"
+            d="M0,50 L200,50 L220,50 L230,20 L240,80 L250,10 L260,90 L270,50 L290,50 L500,50 L520,50 L530,20 L540,80 L550,10 L560,90 L570,50 L590,50 L800,50 L820,50 L830,20 L840,80 L850,10 L860,90 L870,50 L890,50 L1200,50"
+            fill="none"
+            stroke="hsl(var(--primary))"
+            strokeWidth="2"
+          />
+        </svg>
+
+        {/* Floating medical icons */}
+        <svg className="absolute top-[15%] right-[10%] w-16 h-16 text-primary/[0.07] animate-float-slow" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-1 10h-4v4h-4v-4H6v-4h4V5h4v4h4v4z" />
+        </svg>
+        <svg className="absolute bottom-[25%] left-[8%] w-12 h-12 text-accent/[0.08] animate-float-medium" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4.8 2.3A.3.3 0 105 2h0a2 2 0 012 2v.5a.5.5 0 00.5.5h1a.5.5 0 00.5-.5V4a2 2 0 012-2h0a.3.3 0 10.2.3 6 6 0 01-6 0zM12 12l-2.5 2.5M12 12l2.5 2.5M12 12V7" />
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+        <svg className="absolute top-[60%] right-[30%] w-10 h-10 text-primary/[0.06] animate-float-fast" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+        </svg>
+
+        {/* Heartbeat icon pulsing */}
+        <div className="absolute top-[70%] left-[75%] animate-heartbeat">
+          <svg className="w-14 h-14 text-destructive/10" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+        </div>
+        <div className="absolute top-[20%] left-[40%] animate-heartbeat-delay">
+          <svg className="w-8 h-8 text-destructive/[0.06]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+        </div>
       </div>
 
       {/* Navbar */}
