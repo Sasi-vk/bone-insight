@@ -89,7 +89,7 @@ Analyze the ACTUAL pathology visible in the image and match it precisely to the 
           {
             role: "user",
             content: [
-              { type: "text", text: "Analyze this X-ray scan. Identify the condition, determine the correct specialist based on the pathology, assess severity, and provide a clinical report." },
+              { type: "text", text: "Analyze this X-ray scan carefully. First identify the EXACT condition and affected bone/region. Then based ONLY on the detected pathology, recommend the PRECISE specialist doctor — do NOT default to Orthopedic Surgeon unless it's specifically a bone fracture. Assess severity and provide a complete clinical report." },
               {
                 type: "image_url",
                 image_url: { url: `data:${mimeType || "image/png"};base64,${imageBase64}` },
@@ -127,6 +127,66 @@ Analyze the ACTUAL pathology visible in the image and match it precisely to the 
     } catch {
       console.error("Parse failed:", content);
       throw new Error("Failed to parse analysis");
+    }
+
+    // Validation: run a second quick call to verify doctor recommendation
+    if (analysisResult.detected && analysisResult.condition && analysisResult.doctorType) {
+      try {
+        const validationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "user",
+                content: `Given this diagnosis from an X-ray scan:
+- Condition: "${analysisResult.condition}"
+- Affected Region: "${analysisResult.affectedRegion}"
+- Severity: "${analysisResult.severity}"
+
+The current doctor recommendation is: "${analysisResult.doctorType}"
+
+Is this the CORRECT specialist for this specific condition? If NOT, provide the correct one. Use these rules:
+- Simple bone fracture → Orthopedic Surgeon
+- Spinal fracture → Orthopedic Spine Surgeon or Neurosurgeon
+- Skull fracture → Neurosurgeon
+- Facial/jaw fracture → Oral and Maxillofacial Surgeon
+- Rib fracture + lung injury → Cardiothoracic Surgeon
+- Children's fracture/growth plate → Pediatric Orthopedic Surgeon
+- Stress fracture in athletes → Sports Medicine Specialist
+- Arthritis/osteoarthritis → Rheumatologist
+- Osteoporosis → Endocrinologist
+- Bone tumor/mass → Oncologist (Musculoskeletal Oncology)
+- Bone infection → Orthopedic Surgeon; consult Infectious Disease Specialist
+- No abnormality → General Physician
+
+Reply with ONLY valid JSON: {"correct": true/false, "recommendedDoctor": "the correct specialist"}`,
+              },
+            ],
+          }),
+        });
+
+        if (validationResponse.ok) {
+          const valData = await validationResponse.json();
+          const valContent = valData.choices?.[0]?.message?.content;
+          if (valContent) {
+            try {
+              const valMatch = valContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, valContent];
+              const validation = JSON.parse(valMatch[1].trim());
+              if (!validation.correct && validation.recommendedDoctor) {
+                console.log(`Doctor corrected: "${analysisResult.doctorType}" → "${validation.recommendedDoctor}"`);
+                analysisResult.doctorType = validation.recommendedDoctor;
+              }
+            } catch { /* keep original if validation parse fails */ }
+          }
+        }
+      } catch (e) {
+        console.error("Validation step failed, keeping original:", e);
+      }
     }
 
     return new Response(JSON.stringify(analysisResult), {
