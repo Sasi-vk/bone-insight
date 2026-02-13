@@ -53,26 +53,26 @@ const Index = () => {
   return (
     <div className="min-h-screen w-full bg-background relative overflow-hidden">
       {/* Animated Background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Gradient base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
         {/* Floating medical orbs */}
-        <div className="absolute top-[10%] left-[5%] w-72 h-72 rounded-full bg-primary/[0.04] blur-3xl animate-float-slow" />
-        <div className="absolute bottom-[15%] right-[8%] w-96 h-96 rounded-full bg-accent/[0.05] blur-3xl animate-float-medium" />
-        <div className="absolute top-[50%] left-[60%] w-52 h-52 rounded-full bg-primary/[0.03] blur-2xl animate-float-fast" />
-        <div className="absolute top-[25%] right-[20%] w-40 h-40 rounded-full bg-accent/[0.04] blur-2xl animate-float-reverse" />
+        <div className="absolute top-[10%] left-[5%] w-72 h-72 rounded-full bg-primary/15 blur-3xl animate-float-slow" />
+        <div className="absolute bottom-[15%] right-[8%] w-96 h-96 rounded-full bg-accent/20 blur-3xl animate-float-medium" />
+        <div className="absolute top-[50%] left-[60%] w-52 h-52 rounded-full bg-primary/10 blur-2xl animate-float-fast" />
+        <div className="absolute top-[25%] right-[20%] w-40 h-40 rounded-full bg-accent/15 blur-2xl animate-float-reverse" />
         {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
         {/* Pulse rings */}
         <div className="absolute top-[30%] left-[50%] -translate-x-1/2 -translate-y-1/2">
-          <div className="w-[600px] h-[600px] rounded-full border border-primary/[0.06] animate-pulse-ring" />
-          <div className="absolute inset-8 rounded-full border border-primary/[0.04] animate-pulse-ring-delay" />
-          <div className="absolute inset-16 rounded-full border border-primary/[0.03] animate-pulse-ring-delay-2" />
+          <div className="w-[600px] h-[600px] rounded-full border-2 border-primary/10 animate-pulse-ring" />
+          <div className="absolute inset-8 rounded-full border border-primary/[0.07] animate-pulse-ring-delay" />
+          <div className="absolute inset-16 rounded-full border border-primary/[0.05] animate-pulse-ring-delay-2" />
         </div>
       </div>
 
       {/* Navbar */}
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-card/60 backdrop-blur-2xl">
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-card/60 backdrop-blur-2xl relative">
         <div className="w-full flex items-center justify-between px-6 lg:px-10 h-16">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
@@ -96,7 +96,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="w-full px-6 lg:px-10 py-8">
+      <main className="w-full px-6 lg:px-10 py-8 relative z-10">
         <div className={`grid gap-8 ${result ? "grid-cols-1 lg:grid-cols-2 items-start" : "grid-cols-1 max-w-2xl mx-auto"}`}>
           {/* Upload + Button */}
           <div className="space-y-5">
