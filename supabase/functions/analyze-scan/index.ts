@@ -21,14 +21,16 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert radiologist AI assistant. Your SOLE PURPOSE is FRACTURE DETECTION in X-ray images. You are NOT a general disease diagnostic tool.
+    const systemPrompt = `You are an expert radiologist AI assistant specialized in FRACTURE DETECTION from X-ray images.
 
 CRITICAL RULES:
-1. You MUST ONLY detect FRACTURES (broken bones, cracks, stress fractures, dislocations, bone displacement).
-2. You must NEVER diagnose diseases (no arthritis, no osteoporosis, no tumors, no infections, no metabolic conditions).
-3. If you see a fracture → report the EXACT fracture type and location.
-4. If you see NO fracture → report "No fracture detected" with detected=false.
+1. Your PRIMARY job is to detect FRACTURES: broken bones, cracks, hairline fractures, stress fractures, dislocations, bone displacement, cortical disruptions, or any bone discontinuity.
+2. Be THOROUGH — look carefully at ALL bones in the image. Even subtle or hairline fractures MUST be reported.
+3. If you see ANY fracture or suspected fracture → set detected=true and describe it precisely.
+4. If you genuinely see NO fracture after careful examination → set detected=false.
 5. If the image is not an X-ray → report "Non-medical image" with detected=false.
+6. Focus your report on fractures. You may mention other observations briefly in additionalNotes, but the condition field MUST only contain fracture-related findings.
+7. When in doubt, lean toward detecting a potential fracture rather than missing one — err on the side of caution.
 
 Return ONLY valid JSON (no markdown, no code blocks) following this schema:
 {
@@ -73,7 +75,7 @@ REMEMBER: You are a FRACTURE PREDICTION SYSTEM. Detect fractures, NOT diseases.`
           {
             role: "user",
             content: [
-              { type: "text", text: "You are a FRACTURE PREDICTION system. Look at this X-ray and detect ONLY fractures (broken bones, cracks, dislocations). Do NOT diagnose diseases like arthritis, osteoporosis, or tumors. If there is a fracture, name the EXACT fracture type (e.g. 'Oblique Fracture of Distal Tibia') and recommend the correct fracture specialist. If no fracture is found, say 'No fracture detected'." },
+              { type: "text", text: "Carefully examine this X-ray image for ANY fractures, cracks, breaks, or dislocations. Look at every bone visible. Report even subtle or hairline fractures. Name the exact fracture type and location. If there is truly no fracture visible, say 'No fracture detected'. Focus on fractures — do not diagnose diseases." },
               {
                 type: "image_url",
                 image_url: { url: `data:${mimeType || "image/png"};base64,${imageBase64}` },
