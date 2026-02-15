@@ -129,63 +129,59 @@ Analyze the ACTUAL pathology visible in the image and match it precisely to the 
       throw new Error("Failed to parse analysis");
     }
 
-    // Validation: run a second quick call to verify doctor recommendation
-    if (analysisResult.detected && analysisResult.condition && analysisResult.doctorType) {
-      try {
-        const validationResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              {
-                role: "user",
-                content: `Given this diagnosis from an X-ray scan:
-- Condition: "${analysisResult.condition}"
-- Affected Region: "${analysisResult.affectedRegion}"
-- Severity: "${analysisResult.severity}"
+    // RULE-BASED doctor correction — overrides AI when condition keywords clearly map to a specialist
+    if (analysisResult.detected && analysisResult.condition) {
+      const cond = (analysisResult.condition || "").toLowerCase();
+      const region = (analysisResult.affectedRegion || "").toLowerCase();
+      
+      const doctorRules: Array<{ keywords: string[]; regionKeywords?: string[]; doctor: string }> = [
+        // Spine/vertebral → Orthopedic Spine Surgeon or Neurosurgeon
+        { keywords: ["spinal", "spine", "vertebr", "lumbar", "thoracic", "cervical", "disc herniation", "spondyl", "kyphosis", "lordosis", "scoliosis"], doctor: "Orthopedic Spine Surgeon; also consult Neurosurgeon" },
+        // Skull → Neurosurgeon
+        { keywords: ["skull", "cranial", "intracranial"], doctor: "Neurosurgeon" },
+        // Facial/jaw → Oral and Maxillofacial Surgeon
+        { keywords: ["jaw", "mandib", "maxill", "facial", "zygomatic", "orbital", "nasal bone"], doctor: "Oral and Maxillofacial Surgeon" },
+        // Rib with lung → Cardiothoracic Surgeon
+        { keywords: ["rib", "costochondr"], regionKeywords: ["lung", "thorax", "chest", "pulmonary", "pneumothorax"], doctor: "Cardiothoracic Surgeon" },
+        // Tumor/cancer/mass → Oncologist
+        { keywords: ["tumor", "tumour", "osteosarcoma", "sarcoma", "malignant", "neoplasm", "cancer", "metasta", "mass", "lesion suspicious"], doctor: "Oncologist (Musculoskeletal Oncology)" },
+        // Arthritis → Rheumatologist
+        { keywords: ["arthritis", "rheumatoid", "osteoarthr", "synovitis", "joint inflammation", "gout", "gouty"], doctor: "Rheumatologist" },
+        // Osteoporosis/metabolic bone → Endocrinologist
+        { keywords: ["osteoporosis", "osteopenia", "metabolic bone", "paget"], doctor: "Endocrinologist" },
+        // Bone infection → Orthopedic Surgeon + Infectious Disease
+        { keywords: ["osteomyelitis", "bone infection", "septic"], doctor: "Orthopedic Surgeon; consult Infectious Disease Specialist" },
+        // Growth plate / pediatric → Pediatric Orthopedic Surgeon
+        { keywords: ["growth plate", "epiphyseal", "salter-harris", "pediatric", "physis"], doctor: "Pediatric Orthopedic Surgeon" },
+        // Stress fracture → Sports Medicine
+        { keywords: ["stress fracture", "fatigue fracture", "march fracture"], doctor: "Sports Medicine Specialist" },
+        // Dislocation → Orthopedic Surgeon
+        { keywords: ["dislocation", "subluxation", "luxation"], doctor: "Orthopedic Surgeon" },
+        // Pelvic fracture → Orthopedic Trauma Surgeon
+        { keywords: ["pelvic fracture", "pelvis fracture", "acetabul"], doctor: "Orthopedic Trauma Surgeon" },
+        // Compound/open fracture → Orthopedic Trauma Surgeon
+        { keywords: ["compound fracture", "open fracture", "comminuted"], doctor: "Orthopedic Trauma Surgeon" },
+        // Simple bone fracture (catch-all for fractures) → Orthopedic Surgeon
+        { keywords: ["fracture", "broken bone", "crack"], doctor: "Orthopedic Surgeon" },
+      ];
 
-The current doctor recommendation is: "${analysisResult.doctorType}"
-
-Is this the CORRECT specialist for this specific condition? If NOT, provide the correct one. Use these rules:
-- Simple bone fracture → Orthopedic Surgeon
-- Spinal fracture → Orthopedic Spine Surgeon or Neurosurgeon
-- Skull fracture → Neurosurgeon
-- Facial/jaw fracture → Oral and Maxillofacial Surgeon
-- Rib fracture + lung injury → Cardiothoracic Surgeon
-- Children's fracture/growth plate → Pediatric Orthopedic Surgeon
-- Stress fracture in athletes → Sports Medicine Specialist
-- Arthritis/osteoarthritis → Rheumatologist
-- Osteoporosis → Endocrinologist
-- Bone tumor/mass → Oncologist (Musculoskeletal Oncology)
-- Bone infection → Orthopedic Surgeon; consult Infectious Disease Specialist
-- No abnormality → General Physician
-
-Reply with ONLY valid JSON: {"correct": true/false, "recommendedDoctor": "the correct specialist"}`,
-              },
-            ],
-          }),
-        });
-
-        if (validationResponse.ok) {
-          const valData = await validationResponse.json();
-          const valContent = valData.choices?.[0]?.message?.content;
-          if (valContent) {
-            try {
-              const valMatch = valContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, valContent];
-              const validation = JSON.parse(valMatch[1].trim());
-              if (!validation.correct && validation.recommendedDoctor) {
-                console.log(`Doctor corrected: "${analysisResult.doctorType}" → "${validation.recommendedDoctor}"`);
-                analysisResult.doctorType = validation.recommendedDoctor;
-              }
-            } catch { /* keep original if validation parse fails */ }
+      const combined = cond + " " + region + " " + (analysisResult.findings || "").toLowerCase();
+      
+      for (const rule of doctorRules) {
+        const condMatch = rule.keywords.some(k => combined.includes(k));
+        const regionMatch = !rule.regionKeywords || rule.regionKeywords.some(k => combined.includes(k));
+        if (condMatch && regionMatch) {
+          if (analysisResult.doctorType !== rule.doctor) {
+            console.log(`Doctor corrected by rules: "${analysisResult.doctorType}" → "${rule.doctor}" (matched: ${rule.keywords.find(k => combined.includes(k))})`);
+            analysisResult.doctorType = rule.doctor;
           }
+          break;
         }
-      } catch (e) {
-        console.error("Validation step failed, keeping original:", e);
+      }
+
+      // If nothing detected → General Physician
+      if (!analysisResult.detected || cond === "normal" || cond.includes("no abnormality")) {
+        analysisResult.doctorType = "No specialist needed — General Physician for routine follow-up";
       }
     }
 
